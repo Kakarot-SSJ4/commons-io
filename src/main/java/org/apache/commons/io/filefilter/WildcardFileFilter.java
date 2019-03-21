@@ -127,6 +127,7 @@ public class WildcardFileFilter extends AbstractFileFilter implements Serializab
      * @throws IllegalArgumentException if the pattern list is null
      * @throws ClassCastException if the list does not contain Strings
      */
+    @SuppressWarnings("index") // wildcards!=null => windcards.size()>0
     public WildcardFileFilter(final List<String> wildcards, final IOCase caseSensitivity) {
         if (wildcards == null) {
             throw new IllegalArgumentException("The wildcard list must not be null");

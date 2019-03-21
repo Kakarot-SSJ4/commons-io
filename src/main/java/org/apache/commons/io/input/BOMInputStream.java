@@ -27,6 +27,8 @@ import java.util.List;
 
 import org.apache.commons.io.ByteOrderMark;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * This class is used to wrap a stream that includes an encoded {@link ByteOrderMark} as its first bytes.
  *
@@ -94,9 +96,9 @@ public class BOMInputStream extends ProxyInputStream {
     private final List<ByteOrderMark> boms;
     private ByteOrderMark byteOrderMark;
     private int[] firstBytes;
-    private int fbLength;
-    private int fbIndex;
-    private int markFbIndex;
+    private @LengthOf("this.firstBytes") int fbLength;
+    private @NonNegative int fbIndex; // always non negative as they are assigned only by length() functions
+    private @NonNegative int markFbIndex;// always non negative as they are assigned only by length() functions
     private boolean markedAtStart;
 
     /**
@@ -212,11 +214,12 @@ public class BOMInputStream extends ProxyInputStream {
      * @throws IOException
      *             if an error reading the first bytes of the stream occurs
      */
+    @SuppressWarnings("index") // fbIndex = byteOrderMark.length(); // fbIndex is not negative
     public ByteOrderMark getBOM() throws IOException {
         if (firstBytes == null) {
             fbLength = 0;
             // BOMs are sorted from longest to shortest
-            final int maxBomSize = boms.get(0).length();
+            final @SuppressWarnings("index") @NonNegative int maxBomSize = boms.get(0).length(); // can't be negative as it is a length
             firstBytes = new int[maxBomSize];
             // Read first maxBomSize bytes
             for (int i = 0; i < firstBytes.length; i++) {
@@ -231,7 +234,7 @@ public class BOMInputStream extends ProxyInputStream {
             if (byteOrderMark != null) {
                 if (!include) {
                     if (byteOrderMark.length() < firstBytes.length) {
-                        fbIndex = byteOrderMark.length();
+                        fbIndex = byteOrderMark.length(); // not negative
                     } else {
                         fbLength = 0;
                     }
@@ -289,6 +292,7 @@ public class BOMInputStream extends ProxyInputStream {
      *            The BOM
      * @return true if the bytes match the bom, otherwise false
      */
+    @SuppressWarnings("index") // firstBytes has length either equal to or greater than BOM(refer to documentation)
     private boolean matches(final ByteOrderMark bom) {
         // if (bom.length() != fbLength) {
         // return false;
@@ -333,6 +337,7 @@ public class BOMInputStream extends ProxyInputStream {
      *             if an I/O error occurs
      */
     @Override
+    @SuppressWarnings("index") // at the end of stream, b becomes -1 and the loop is not executed, hence buf[off++] is valid inside the loop
     public int read(final byte[] buf, int off, int len) throws IOException {
         int firstCount = 0;
         int b = 0;

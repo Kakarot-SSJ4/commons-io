@@ -122,6 +122,7 @@ public class NameFileFilter extends AbstractFileFilter implements Serializable {
      * @throws IllegalArgumentException if the name list is null
      * @throws ClassCastException if the list does not contain Strings
      */
+    @SuppressWarnings("index") // names.size() is non negative when called
     public NameFileFilter(final List<String> names, final IOCase caseSensitivity) {
         if (names == null) {
             throw new IllegalArgumentException("The list of names must not be null");

@@ -453,6 +453,7 @@ public class FileUtils {
      * @param files a Collection containing java.io.File instances
      * @return an array of java.io.File
      */
+    @SuppressWarnings("index") // files.size() is non negative
     public static File[] convertFileCollectionToFileArray(final Collection<File> files) {
         return files.toArray(new File[files.size()]);
     }

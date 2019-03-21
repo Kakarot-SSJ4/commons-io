@@ -89,11 +89,12 @@ public class WildcardFilter extends AbstractFileFilter implements Serializable {
      * @throws IllegalArgumentException if the pattern list is null
      * @throws ClassCastException if the list does not contain Strings
      */
+    @SuppressWarnings("index") //wildcard!=null => wildcards.size()>0
     public WildcardFilter(final List<String> wildcards) {
         if (wildcards == null) {
             throw new IllegalArgumentException("The wildcard list must not be null");
         }
-        this.wildcards = wildcards.toArray(new String[wildcards.size()]);
+       this.wildcards = wildcards.toArray(new String[wildcards.size()]); 
     }
 
     //-----------------------------------------------------------------------

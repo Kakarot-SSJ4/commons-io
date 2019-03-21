@@ -27,6 +27,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.Charsets;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * Reads lines in a file reversely (similar to a BufferedReader, but starting at
  * the last line). Useful for e.g. searching in log files.
@@ -38,13 +40,13 @@ public class ReversedLinesFileReader implements Closeable {
     private static final String EMPTY_STRING = "";
     private static final int DEFAULT_BLOCK_SIZE = 4096;
 
-    private final int blockSize;
+    private final @NonNegative int blockSize;
     private final Charset encoding;
 
     private final RandomAccessFile randomAccessFile;
 
-    private final long totalByteLength;
-    private final long totalBlockCount;
+    private final @NonNegative long totalByteLength;
+    private final @NonNegative long totalBlockCount;
 
     private final byte[][] newLineSequences;
     private final int avoidNewlineSplitBufferSize;
@@ -95,7 +97,9 @@ public class ReversedLinesFileReader implements Closeable {
      * @throws IOException  if an I/O error occurs
      * @since 2.3
      */
-    public ReversedLinesFileReader(final File file, final int blockSize, final Charset encoding) throws IOException {
+    @SuppressWarnings("index") /*totalByteLength = randomAccessFile.length(); randomAccessFile.length() is NonNegative
+    */
+    public ReversedLinesFileReader(final File file, final @NonNegative int blockSize, final Charset encoding) throws IOException {
         this.blockSize = blockSize;
         this.encoding = encoding;
 
@@ -136,12 +140,12 @@ public class ReversedLinesFileReader implements Closeable {
 
         // Open file
         randomAccessFile = new RandomAccessFile(file, "r");
-        totalByteLength = randomAccessFile.length();
-        int lastBlockLength = (int) (totalByteLength % blockSize);
+        totalByteLength = randomAccessFile.length(); // randomAccessFile.length() is non Negative
+        @NonNegative int lastBlockLength = (int) (totalByteLength % blockSize);
         if (lastBlockLength > 0) {
-            totalBlockCount = totalByteLength / blockSize + 1;
+            totalBlockCount = totalByteLength / blockSize + 1; // RHS is NonNegative
         } else {
-            totalBlockCount = totalByteLength / blockSize;
+            totalBlockCount = totalByteLength / blockSize; // RHS NonNegative
             if (totalByteLength > 0) {
                 lastBlockLength = blockSize;
             }
@@ -164,7 +168,7 @@ public class ReversedLinesFileReader implements Closeable {
      * @throws java.nio.charset.UnsupportedCharsetException thrown instead of {@link UnsupportedEncodingException} in
      * version 2.2 if the encoding is not supported.
      */
-    public ReversedLinesFileReader(final File file, final int blockSize, final String encoding) throws IOException {
+    public ReversedLinesFileReader(final File file, final @NonNegative int blockSize, final String encoding) throws IOException {
         this(file, blockSize, Charsets.toCharset(encoding));
     }
 
@@ -211,7 +215,7 @@ public class ReversedLinesFileReader implements Closeable {
 
         private final byte[] data;
 
-        private byte[] leftOver;
+        private @NonNegative byte[] leftOver;
 
         private int currentLastBytePos;
 
@@ -222,9 +226,9 @@ public class ReversedLinesFileReader implements Closeable {
          * @param leftOverOfLastFilePart remainder
          * @throws IOException if there is a problem reading the file
          */
-        private FilePart(final long no, final int length, final byte[] leftOverOfLastFilePart) throws IOException {
+        private FilePart(final long no, final @NonNegative int length, final @NonNegative byte[] leftOverOfLastFilePart) throws IOException {
             this.no = no;
-            final int dataLength = length + (leftOverOfLastFilePart != null ? leftOverOfLastFilePart.length : 0);
+            final @NonNegative int dataLength = length + (leftOverOfLastFilePart != null ? leftOverOfLastFilePart.length : 0);
             this.data = new byte[dataLength];
             final long off = (no - 1) * blockSize;
 
@@ -354,7 +358,7 @@ public class ReversedLinesFileReader implements Closeable {
             for (final byte[] newLineSequence : newLineSequences) {
                 boolean match = true;
                 for (int j = newLineSequence.length - 1; j >= 0; j--) {
-                    final int k = i + j - (newLineSequence.length - 1);
+                    final @SuppressWarnings("index") @IndexFor("data") int k = i + j - (newLineSequence.length - 1); // j - (newLineSequence.length - 1) is <= and i is offset hence the expression is not greater than length - 1
                     match &= k >= 0 && data[k] == newLineSequence[j];
                 }
                 if (match) {

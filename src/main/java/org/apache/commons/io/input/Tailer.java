@@ -27,6 +27,8 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * Simple implementation of the unix "tail -f" functionality.
  *
@@ -220,7 +222,7 @@ public class Tailer implements Runnable {
      * @param bufSize Buffer size
      */
     public Tailer(final File file, final TailerListener listener, final long delayMillis, final boolean end,
-                  final int bufSize) {
+                  final @NonNegative int bufSize) {
         this(file, listener, delayMillis, end, false, bufSize);
     }
 
@@ -234,7 +236,7 @@ public class Tailer implements Runnable {
      * @param bufSize Buffer size
      */
     public Tailer(final File file, final TailerListener listener, final long delayMillis, final boolean end,
-                  final boolean reOpen, final int bufSize) {
+                  final boolean reOpen, final @NonNegative int bufSize) {
         this(file, DEFAULT_CHARSET, listener, delayMillis, end, reOpen, bufSize);
     }
 
@@ -250,7 +252,7 @@ public class Tailer implements Runnable {
      */
     public Tailer(final File file, final Charset charset, final TailerListener listener, final long delayMillis,
                   final boolean end, final boolean reOpen
-            , final int bufSize) {
+            , final @NonNegative int bufSize) {
         this.file = file;
         this.delayMillis = delayMillis;
         this.end = end;
@@ -275,7 +277,7 @@ public class Tailer implements Runnable {
      * @return The new tailer
      */
     public static Tailer create(final File file, final TailerListener listener, final long delayMillis,
-                                final boolean end, final int bufSize) {
+                                final boolean end, final @NonNegative int bufSize) {
         return create(file, listener, delayMillis, end, false, bufSize);
     }
 
@@ -292,7 +294,7 @@ public class Tailer implements Runnable {
      */
     public static Tailer create(final File file, final TailerListener listener, final long delayMillis,
                                 final boolean end, final boolean reOpen,
-            final int bufSize) {
+            final @NonNegative int bufSize) {
         return create(file, DEFAULT_CHARSET, listener, delayMillis, end, reOpen, bufSize);
     }
 
@@ -310,7 +312,7 @@ public class Tailer implements Runnable {
      */
     public static Tailer create(final File file, final Charset charset, final TailerListener listener,
                                 final long delayMillis, final boolean end, final boolean reOpen
-            ,final int bufSize) {
+            ,final @NonNegative int bufSize) {
         final Tailer tailer = new Tailer(file, charset, listener, delayMillis, end, reOpen, bufSize);
         final Thread thread = new Thread(tailer);
         thread.setDaemon(true);
@@ -517,7 +519,7 @@ public class Tailer implements Runnable {
             boolean seenCR = false;
             while (getRun() && ((num = reader.read(inbuf)) != EOF)) {
                 for (int i = 0; i < num; i++) {
-                    final byte ch = inbuf[i];
+                   @SuppressWarnings("index") final byte ch = inbuf[i]; // (num = reader.read(inbuf)) != EOF => num!=-1 and i<num is a valid index for inbuf 
                     switch ( ch ) {
                         case '\n':
                             seenCR = false; // swallow CR before LF

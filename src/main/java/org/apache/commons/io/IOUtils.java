@@ -51,6 +51,8 @@ import java.util.List;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.io.output.StringBuilderWriter;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * General IO stream manipulation utilities.
  * <p>
@@ -805,8 +807,8 @@ public class IOUtils {
      * @throws IOException          if an I/O error occurs
      * @since 2.5
      */
-    public static long copy(final InputStream input, final OutputStream output, final int bufferSize)
-            throws IOException {
+    public static long copy(final InputStream input, final OutputStream output, final @NonNegative int bufferSize)
+            throws IOException { // bufferSize has to be NonNegative to define byte[bufferSize]
         return copyLarge(input, output, new byte[bufferSize]);
     }
 
@@ -1569,7 +1571,9 @@ public class IOUtils {
      * @throws EOFException             if the number of bytes read was incorrect
      * @since 2.5
      */
-    public static byte[] readFully(final InputStream input, final int length) throws IOException {
+    public static byte[] readFully(final InputStream input, final @NonNegative int length) throws IOException { /*
+    length has to be non negative to define byte[length]
+    */ 
         final byte[] buffer = new byte[length];
         readFully(input, buffer, 0, buffer.length);
         return buffer;

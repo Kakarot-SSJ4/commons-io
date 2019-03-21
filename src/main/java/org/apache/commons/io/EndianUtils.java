@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * Utility code for dealing with different endian systems.
  * <p>
@@ -115,7 +117,10 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @param value value to write
      */
-    public static void writeSwappedShort(final byte[] data, final int offset, final short value) {
+    @SuppressWarnings("index") /* According to the documentation, this function writes a "short" value to a byte array at a given offset, which
+    is 2 bytes, hence the array has to have two available indexes - at offset and offset + 1
+    */
+    public static void writeSwappedShort(final byte[] data, final @IndexFor("#1") @NonNegative int offset, final short value) {
         data[ offset + 0 ] = (byte)( ( value >> 0 ) & 0xff );
         data[ offset + 1 ] = (byte)( ( value >> 8 ) & 0xff );
     }
@@ -127,7 +132,11 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @return the value read
      */
-    public static short readSwappedShort(final byte[] data, final int offset) {
+    @SuppressWarnings("index")
+    /* According to the documentation, this function read a "short" value from a byte array at a given offset, which
+    is 2 bytes, hence the array has to have two available indexes - at offset and offset + 1
+    */
+    public static short readSwappedShort(final byte[] data, final @IndexFor("#1") @NonNegative int offset) {
         return (short)( ( ( data[ offset + 0 ] & 0xff ) << 0 ) +
             ( ( data[ offset + 1 ] & 0xff ) << 8 ) );
     }
@@ -140,7 +149,10 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @return the value read
      */
-    public static int readSwappedUnsignedShort(final byte[] data, final int offset) {
+     @SuppressWarnings("index") /* According to the documentation, this function reads an unsigned "short" value from a byte array at a given offset, which
+    is 2 bytes, hence the array has to have two available indexes - at offset and offset + 1
+    */
+    public static int readSwappedUnsignedShort(final byte[] data, final @IndexFor("#1") @NonNegative int offset) {
         return ( ( ( data[ offset + 0 ] & 0xff ) << 0 ) +
             ( ( data[ offset + 1 ] & 0xff ) << 8 ) );
     }
@@ -152,7 +164,10 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @param value value to write
      */
-    public static void writeSwappedInteger(final byte[] data, final int offset, final int value) {
+     @SuppressWarnings("index") /* According to the documentation, this function writes an "int" value to a byte array at a given offset, which
+    is 4 bytes, hence the array has to have two available indexes - at offset, offset + 1, offset + 2 and offset + 3. 
+    */
+    public static void writeSwappedInteger(final byte[] data, final @IndexFor("#1") @NonNegative int offset, final int value) {
         data[ offset + 0 ] = (byte)( ( value >> 0 ) & 0xff );
         data[ offset + 1 ] = (byte)( ( value >> 8 ) & 0xff );
         data[ offset + 2 ] = (byte)( ( value >> 16 ) & 0xff );
@@ -166,7 +181,10 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @return the value read
      */
-    public static int readSwappedInteger(final byte[] data, final int offset) {
+     @SuppressWarnings("index") /* According to the documentation, this function reads an "int" value from a byte array at a given offset, which
+    is 4 bytes, hence the array has to have two available indexes - at offset, offset + 1, offset + 2 and offset + 3. 
+    */
+    public static int readSwappedInteger(final byte[] data, final @IndexFor("#1") @NonNegative int offset) {
         return ( ( ( data[ offset + 0 ] & 0xff ) << 0 ) +
             ( ( data[ offset + 1 ] & 0xff ) << 8 ) +
             ( ( data[ offset + 2 ] & 0xff ) << 16 ) +
@@ -181,7 +199,10 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @return the value read
      */
-    public static long readSwappedUnsignedInteger(final byte[] data, final int offset) {
+     @SuppressWarnings("index") /* According to the documentation, this function reads an "int" value from a byte array at a given offset, which
+    is 4 bytes, hence the array has to have two available indexes - at offset, offset + 1, offset + 2 and offset + 3. 
+    */
+    public static long readSwappedUnsignedInteger(final byte[] data, final @IndexFor("#1") @NonNegative int offset) {
         final long low = ( ( ( data[ offset + 0 ] & 0xff ) << 0 ) +
                      ( ( data[ offset + 1 ] & 0xff ) << 8 ) +
                      ( ( data[ offset + 2 ] & 0xff ) << 16 ) );
@@ -198,7 +219,11 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @param value value to write
      */
-    public static void writeSwappedLong(final byte[] data, final int offset, final long value) {
+     @SuppressWarnings("index") /* According to the documentation, this function writes a "long" value to a byte array at a given offset, which
+    is 8 bytes, hence the array has to have two available indexes - at offset, offset + 1, offset + 2 and offset + 3, offset + 4, offset + 5,
+    offset + 6, offset + 7
+    */
+    public static void writeSwappedLong(final byte[] data, final @IndexFor("#1") @NonNegative int offset, final long value) {
         data[ offset + 0 ] = (byte)( ( value >> 0 ) & 0xff );
         data[ offset + 1 ] = (byte)( ( value >> 8 ) & 0xff );
         data[ offset + 2 ] = (byte)( ( value >> 16 ) & 0xff );
@@ -216,7 +241,11 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @return the value read
      */
-    public static long readSwappedLong(final byte[] data, final int offset) {
+         @SuppressWarnings("index") /* According to the documentation, this function read a "long" value from a byte array at a given offset, which
+    is 8 bytes, hence the array has to have two available indexes - at offset, offset + 1, offset + 2 and offset + 3, offset + 4, offset + 5,
+    offset + 6, offset + 7
+    */
+    public static long readSwappedLong(final byte[] data, final @IndexFor("#1") @NonNegative int offset) {
         final long low = readSwappedInteger(data, offset);
         final long high = readSwappedInteger(data, offset + 4);
         return (high << 32) + (0xffffffffL & low);
@@ -229,7 +258,7 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @param value value to write
      */
-    public static void writeSwappedFloat(final byte[] data, final int offset, final float value) {
+    public static void writeSwappedFloat(final byte[] data, final @IndexFor("#1") @NonNegative int offset, final float value) {
         writeSwappedInteger( data, offset, Float.floatToIntBits( value ) );
     }
 
@@ -240,7 +269,7 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @return the value read
      */
-    public static float readSwappedFloat(final byte[] data, final int offset) {
+    public static float readSwappedFloat(final byte[] data, final @IndexFor("#1") @NonNegative int offset) {
         return Float.intBitsToFloat( readSwappedInteger( data, offset ) );
     }
 
@@ -251,7 +280,7 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @param value value to write
      */
-    public static void writeSwappedDouble(final byte[] data, final int offset, final double value) {
+    public static void writeSwappedDouble(final byte[] data, final @IndexFor("#1") @NonNegative int offset, final double value) {
         writeSwappedLong( data, offset, Double.doubleToLongBits( value ) );
     }
 
@@ -262,7 +291,7 @@ public class EndianUtils {
      * @param offset starting offset in the byte array
      * @return the value read
      */
-    public static double readSwappedDouble(final byte[] data, final int offset) {
+    public static double readSwappedDouble(final byte[] data, final @IndexFor("#1") @NonNegative int offset) {
         return Double.longBitsToDouble( readSwappedLong( data, offset ) );
     }
 

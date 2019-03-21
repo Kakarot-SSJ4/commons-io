@@ -1,0 +1,30 @@
+The following error message can be improved:
+[array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
+[ERROR]   found   : @LowerBoundUnknown int
+[ERROR]   required: an integer >= 0 (@NonNegative or @Positive)
+Print either "an integer>=0" or "@NonNegative or @Positive"
+
+------------
+
+FileUtils.java:
+return files.toArray(new File[files.size()]);
+[ERROR] /home/kakarot/commons-io/src/main/java/org/apache/commons/io/FileUtils.java:[457,49] [array.length.negative] Variable used in array creation could be negative.
+[ERROR]   found   : @LowerBoundUnknown int
+[ERROR]   required: an integer >= 0 (@NonNegative or @Positive)
+This should not be a @LowerBoundUnkown int, as files.size() will always be greater than or equal to 0, unless files is null, which will throw a NullPointerException.
+
+----------
+
+ReversedLinesFileReader.java:
+totalByteLength = randomAccessFile.length();
+where totalByteLength is annotated as @NonNegative.
+/home/kakarot/commons-io/src/main/java/org/apache/commons/io/input/ReversedLinesFileReader.java:[141,50] [assignment.type.incompatible] incompatible types in assignment.
+[ERROR]   found   : @LowerBoundUnknown long
+[ERROR]   required: @NonNegative long
+
+
+---------
+
+public void func(int ar[], @IndexFor("ar") int x){
+}
+The checker gives error, it goes after replacing "ar" with "#1"

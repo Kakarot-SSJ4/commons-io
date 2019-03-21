@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.apache.commons.io.IOCase;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * Filters filenames for a certain prefix.
  * <p>
@@ -130,6 +132,7 @@ public class PrefixFileFilter extends AbstractFileFilter implements Serializable
      * @throws ClassCastException if the list does not contain Strings
      * @since 1.4
      */
+    @SuppressWarnings("index") // prefixes.size() is non negative
     public PrefixFileFilter(final List<String> prefixes, final IOCase caseSensitivity) {
         if (prefixes == null) {
             throw new IllegalArgumentException("The list of prefixes must not be null");

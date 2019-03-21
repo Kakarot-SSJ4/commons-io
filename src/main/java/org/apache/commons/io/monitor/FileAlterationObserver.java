@@ -28,6 +28,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.comparator.NameFileComparator;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * FileAlterationObserver represents the state of files below a root directory,
  * checking the filesystem and notifying listeners of create, change or
@@ -320,26 +322,28 @@ public class FileAlterationObserver implements Serializable {
      * @param previous The original list of files
      * @param files  The current list of files
      */
+    @SuppressWarnings("index") // c < files.length ensures c remains in the limits
     private void checkAndNotify(final FileEntry parent, final FileEntry[] previous, final File[] files) {
-        int c = 0;
-        final FileEntry[] current = files.length > 0 ? new FileEntry[files.length] : FileEntry.EMPTY_ENTRIES;
+        final FileEntry[] current; // declaring before to use in annotation
+        @SuppressWarnings("index") @IndexFor({"#3","current"}) int c = 0; // c is always a valid index when used (checked with c < files.length)
+        current = files.length > 0 ? new FileEntry[files.length] : FileEntry.EMPTY_ENTRIES;
         for (final FileEntry entry : previous) {
             while (c < files.length && comparator.compare(entry.getFile(), files[c]) > 0) {
                 current[c] = createFileEntry(parent, files[c]);
                 doCreate(current[c]);
-                c++;
+                c++; // c < files.length ensures c remains in the limits
             }
             if (c < files.length && comparator.compare(entry.getFile(), files[c]) == 0) {
                 doMatch(entry, files[c]);
                 checkAndNotify(entry, entry.getChildren(), listFiles(files[c]));
                 current[c] = entry;
-                c++;
+                c++; //  c < files.length ensures c remains in the limits
             } else {
                 checkAndNotify(entry, entry.getChildren(), FileUtils.EMPTY_FILE_ARRAY);
                 doDelete(entry);
             }
         }
-        for (; c < files.length; c++) {
+        for (; c < files.length; c++) { // c < files.length ensures c remains in the limits
             current[c] = createFileEntry(parent, files[c]);
             doCreate(current[c]);
         }
@@ -367,10 +371,11 @@ public class FileAlterationObserver implements Serializable {
      * @param entry the parent entry
      * @return The child files
      */
+    @SuppressWarnings("index") // i is always a valid index when used even after i++ (checked by i<files.length)
     private FileEntry[] doListFiles(final File file, final FileEntry entry) {
         final File[] files = listFiles(file);
         final FileEntry[] children = files.length > 0 ? new FileEntry[files.length] : FileEntry.EMPTY_ENTRIES;
-        for (int i = 0; i < files.length; i++) {
+        for (@IndexFor({"files","children"}) @SuppressWarnings("index") int i = 0; i < files.length; i++) { // i is always a valid index when used (checked by i<files.length) 
             children[i] = createFileEntry(entry, files[i]);
         }
         return children;

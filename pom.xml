@@ -227,6 +227,28 @@ file comparators, endian transformation classes, and much more.
 
   <dependencies>
     <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker-qual</artifactId>
+      <version>2.6.0</version>
+      <scope>system</scope>
+      <systemPath>${env.CHECKERFRAMEWORK}/checker/dist/checker-qual.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker</artifactId>
+      <version>2.6.0</version>
+      <scope>system</scope>
+      <systemPath>${env.CHECKERFRAMEWORK}/checker/dist/checker.jar</systemPath>
+    </dependency>
+    <!-- The annotated JDK to use. -->
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>jdk8</artifactId>
+      <version>2.6.0</version>
+      <scope>system</scope>
+      <systemPath>${env.CHECKERFRAMEWORK}/checker/dist/jdk8.jar</systemPath>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
@@ -235,6 +257,7 @@ file comparators, endian transformation classes, and much more.
   </dependencies>
 
   <properties>
+    <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <commons.componentid>io</commons.componentid>
@@ -269,6 +292,48 @@ file comparators, endian transformation classes, and much more.
     <defaultGoal>clean verify apache-rat:check clirr:check checkstyle:check javadoc:javadoc</defaultGoal>
     <pluginManagement>
       <plugins>
+        <plugin>
+    <!-- This plugin will set properties values using dependency information -->
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+      <execution>
+        <goals>
+          <goal>properties</goal>
+        </goals>
+      </execution>
+    </executions>
+  </plugin>
+ <plugin>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.6.1</version>
+    <configuration>
+      <source>1.8</source>
+      <target>1.8</target>
+      <compilerArguments>
+        <Xmaxerrs>10000</Xmaxerrs>
+        <Xmaxwarns>10000</Xmaxwarns>
+      </compilerArguments>
+      <annotationProcessorPaths>
+        <path>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker</artifactId>
+          <version>2.6.0</version>
+        </path>
+      </annotationProcessorPaths>
+      <annotationProcessors>
+        <!-- Add all the checkers you want to enable here -->
+        <annotationProcessor>org.checkerframework.checker.index.IndexChecker</annotationProcessor>
+      </annotationProcessors>
+      <compilerArgs>
+        <!-- location of the annotated JDK, which comes from a Maven dependency -->
+        <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
+        <!-- -Awarns turns type-checking warnings into errors. -->
+        <!-- <arg>-Awarns</arg> -->
+      </compilerArgs>
+    </configuration>
+  </plugin>
+
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
@@ -446,5 +511,53 @@ file comparators, endian transformation classes, and much more.
         <coveralls.skip>true</coveralls.skip>
       </properties>
     </profile>
+    <profile>
+    <id>checker</id>
+    <dependencies>
+      <dependency>
+        <groupId>org.checkerframework</groupId>
+        <artifactId>checker</artifactId>
+        <version>1.9.13</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.checkerframework</groupId>
+        <artifactId>jdk8</artifactId>
+        <version>1.9.13</version>
+        <scope>provided</scope>
+      </dependency>
+    </dependencies>
+    <build>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.10</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>properties</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.3</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <annotationProcessors>
+              <annotationProcessor>org.checkerframework.checker.index.IndexChecker</annotationProcessor>
+            </annotationProcessors>
+            <compilerArgs>
+              <arg>-Xbootclasspath/p:${org.checkerframework:jdk8:jar}</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+      </plugins>
+    </build>
+  </profile>
   </profiles>
 </project>

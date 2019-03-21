@@ -20,6 +20,8 @@ import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * A filter reader that filters out characters where subclasses decide which characters to filter out.
  */
@@ -54,7 +56,10 @@ public abstract class AbstractCharacterFilterReader extends FilterReader {
     protected abstract boolean filter(int ch);
 
     @Override
-    public int read(final char[] cbuf, final int off, final int len) throws IOException {
+    @SuppressWarnings("index") /* pos !=-1 when used as an index as checked, readPos>= pos => readPos >=0  
+    Also, it gives override.param.invalid, but since java.io.FilterReader is not annotated, we have to suppress those warnings
+    */
+    public int read(final char[] cbuf, final @NonNegative int off, final int len) throws IOException { //offset variable should be non negative
         final int read = super.read(cbuf, off, len);
         if (read == -1) {
             return -1;

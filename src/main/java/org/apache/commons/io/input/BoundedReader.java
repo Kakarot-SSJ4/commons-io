@@ -21,6 +21,8 @@ package org.apache.commons.io.input;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * A reader that imposes a limit to the number of characters that can be read from
  * an underlying reader, returning eof when this limit is reached -regardless of state of
@@ -138,14 +140,19 @@ public class BoundedReader
      * @see java.io.Reader#read(char[], int, int)
      */
     @Override
-    public int read( final char[] cbuf, final int off, final int len ) throws IOException {
+    @SuppressWarnings("all") /* Set to all because conditional.type.incompatible error wasn't suppressed with index
+    The checker suggests there to be incompatible types in conditional expression and suggests i to have the
+    annotation @IntVal(-1), but clearly, i can take on any non negative integral value.
+    Also suppressing override.param.invalid error because java.io.Reader hasn't been annotated.
+    */
+    public int read( final char[] cbuf, final @NonNegative int off, final int len ) throws IOException { // offset value has to be non negative
         int c;
-        for ( int i = 0; i < len; i++ ) {
+        for (@NonNegative int i = 0; i < len; i++ ) {
             c = read();
             if ( c == -1 ) {
                 return i == 0 ? -1 : i;
             }
-            cbuf[off + i] = (char) c;
+            cbuf[off + i] = (char) c; // off + i is always non negative
         }
         return len;
     }

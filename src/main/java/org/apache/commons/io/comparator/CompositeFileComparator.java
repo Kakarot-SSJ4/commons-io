@@ -67,7 +67,7 @@ public class CompositeFileComparator extends AbstractFileComparator implements S
      *
      * @param delegates The delegate file comparators
      */
-    @SuppressWarnings("unchecked") // casts 1 & 2 must be OK because types are already correct
+    @SuppressWarnings({"unchecked","index"}) // casts 1 & 2 must be OK because types are already correct, list.size() is never negative
     public CompositeFileComparator(final Iterable<Comparator<File>> delegates) {
         if (delegates == null) {
             this.delegates = (Comparator<File>[]) NO_COMPARATORS; //1

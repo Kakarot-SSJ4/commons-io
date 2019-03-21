@@ -29,6 +29,8 @@ import java.util.Set;
 
 import org.apache.commons.io.IOCase;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * Useful utilities for working with file filters. It provides access to all
  * file filter implementations in this package so you don't have to import
@@ -73,6 +75,7 @@ public class FileFilterUtils {
      *
      * @since 2.0
      */
+    @SuppressWarnings("index") // in return acceptedFiles.toArray(new File[acceptedFiles.size()]), acceptedFiles.size() will always be positive as checked by previous ifs
     public static File[] filter(final IOFileFilter filter, final File... files) {
         if (filter == null) {
             throw new IllegalArgumentException("file filter is null");
@@ -118,6 +121,7 @@ public class FileFilterUtils {
      *
      * @since 2.0
      */
+    @SuppressWarnings("index") // in return acceptedFiles.toArray(new File[acceptedFiles.size()]), acceptedFiles.size() will not be null as checked in the functions called 
     public static File[] filter(final IOFileFilter filter, final Iterable<File> files) {
         final List<File> acceptedFiles = filterList(filter, files);
         return acceptedFiles.toArray(new File[acceptedFiles.size()]);

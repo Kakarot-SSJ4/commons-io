@@ -26,6 +26,8 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * General file name and file path manipulation utilities.
  * <p>
@@ -351,6 +353,9 @@ public class FilenameUtils {
      * @param keepSeparator  true to keep the final separator
      * @return the normalized fileName. Null bytes inside string will be removed.
      */
+    @SuppressWarnings("index")/* The errors will occur only when prefix is 0 -> least value of index is prefix - 1, but prefix is 0 only when
+    size is 1 (refer to getPrefixLength())
+    */
     private static String doNormalize(final String fileName, final char separator, final boolean keepSeparator) {
         if (fileName == null) {
             return null;
@@ -395,7 +400,7 @@ public class FilenameUtils {
         }
 
         // dot slash
-        for (int i = prefix + 1; i < size; i++) {
+        for (int i = prefix + 1; i < size; i++) { // if prefix = 0 , i =  loop will not be executed
             if (array[i] == separator && array[i - 1] == '.' &&
                     (i == prefix + 1 || array[i - 2] == separator)) {
                 if (i == size - 1) {
@@ -409,7 +414,7 @@ public class FilenameUtils {
 
         // double dot slash
         outer:
-        for (int i = prefix + 2; i < size; i++) {
+        for (int i = prefix + 2; i < size; i++) { // if prefix  = 0, size = 1, loop will not be executed
             if (array[i] == separator && array[i - 1] == '.' && array[i - 2] == '.' &&
                     (i == prefix + 2 || array[i - 3] == separator)) {
                 if (i == prefix + 2) {
@@ -419,7 +424,7 @@ public class FilenameUtils {
                     lastIsDirectory = true;
                 }
                 int j;
-                for (j = i - 4 ; j >= prefix; j--) {
+                for (j = i - 4 ; j >= prefix; j--) { // j's max value is size - 4 - 1 which is a valid index for array 
                     if (array[j] == separator) {
                         // remove b/../ from a/b/../c
                         System.arraycopy(array, i + 1, array, j + 1, size - i);
@@ -1371,6 +1376,7 @@ public class FilenameUtils {
      * @return true if the fileName matches the wildcard string
      * @since 1.3
      */
+    @SuppressWarnings("index") // if(textIdx==null)-> break;
     public static boolean wildcardMatch(final String fileName, final String wildcardMatcher, IOCase caseSensitivity) {
         if (fileName == null && wildcardMatcher == null) {
             return true;
@@ -1383,8 +1389,8 @@ public class FilenameUtils {
         }
         final String[] wcs = splitOnTokens(wildcardMatcher);
         boolean anyChars = false;
-        int textIdx = 0;
-        int wcsIdx = 0;
+        @NonNegative int textIdx = 0;
+        @NonNegative int wcsIdx = 0;
         final Stack<int[]> backtrack = new Stack<>();
 
         // loop around a backtrack stack, to handle complex * matching
@@ -1461,6 +1467,7 @@ public class FilenameUtils {
      * @param text  the text to split
      * @return the array of tokens, never null
      */
+    @SuppressWarnings("index") // list.size() is never negative when called
     static String[] splitOnTokens(final String text) {
         // used by wildcardMatch
         // package level so a unit test may run on this
@@ -1558,6 +1565,7 @@ public class FilenameUtils {
      * @param inet6Address the name to validate
      * @return true if the given name is a valid IPv6 address
      */
+    @SuppressWarnings("index")//  if (containsCompressedZeroes) => inet6Address!=null, octets is a non null array, octetList.size() is valid
     private static boolean isIPv6Address(final String inet6Address) {
         final boolean containsCompressedZeroes = inet6Address.contains("::");
         if (containsCompressedZeroes && (inet6Address.indexOf("::") != inet6Address.lastIndexOf("::"))) {

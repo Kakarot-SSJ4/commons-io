@@ -43,6 +43,9 @@ public class InfiniteCircularInputStream extends InputStream {
     }
 
     @Override
+    @SuppressWarnings("index") /* in repeatedContent[position], position will never be negative as it is initialized to -1, but (position + 1)
+     % repeatedContent.length ensures it to be non negative  
+     */
     public int read() {
         position = (position + 1) % repeatedContent.length;
         return repeatedContent[position] & 0xff;

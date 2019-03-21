@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import org.checkerframework.checker.index.qual.*;
+
 
 /**
  * Implementation of a buffered input stream, which is internally based on the
@@ -70,7 +72,7 @@ public class CircularBufferInputStream extends InputStream {
         if (eofSeen) {
             return;
         }
-        int space = buffer.getSpace();
+        @NonNegative int space = buffer.getSpace();
         final byte[] buf = new byte[space];
         while (space > 0) {
             final int res = in.read(buf, 0, space);
@@ -112,6 +114,7 @@ public class CircularBufferInputStream extends InputStream {
     }
 
     @Override
+    @SuppressWarnings("index") // final int result = Math.min(pLength, buffer.getCurrentNumberOfBytes()) => pOffset+i is an index of pBuffer
     public int read(byte[] pBuffer, int pOffset, int pLength) throws IOException {
         Objects.requireNonNull(pBuffer, "Buffer");
         if (pOffset < 0) {

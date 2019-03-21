@@ -131,6 +131,7 @@ public class SuffixFileFilter extends AbstractFileFilter implements Serializable
      * @throws ClassCastException if the list does not contain Strings
      * @since 1.4
      */
+    @SuppressWarnings("index") // suffixes.size() is not negative when called
     public SuffixFileFilter(final List<String> suffixes, final IOCase caseSensitivity) {
         if (suffixes == null) {
             throw new IllegalArgumentException("The list of suffixes must not be null");

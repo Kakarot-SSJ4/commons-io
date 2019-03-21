@@ -19,6 +19,8 @@ package org.apache.commons.io;
 import java.io.Serializable;
 import java.util.Locale;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * Byte Order Mark (BOM) representation - see {@link org.apache.commons.io.input.BOMInputStream}.
  *
@@ -98,7 +100,7 @@ public class ByteOrderMark implements Serializable {
      * Return the length of the BOM's bytes.
      *
      * @return the length of the BOM's bytes
-     */
+     */ 
     public int length() {
         return bytes.length;
     }
@@ -109,7 +111,11 @@ public class ByteOrderMark implements Serializable {
      * @param pos The position
      * @return The specified byte
      */
-    public int get(final int pos) {
+     @SuppressWarnings("index")
+/* the specified byte at the particular position pos(non negative),
+        suppressing warning of pososibility of exceeding the bounds of bytes, ensured by equals(--) when get() is called
+        */
+    public int get(final @NonNegative int pos) { 
         return bytes[pos];
     }
 

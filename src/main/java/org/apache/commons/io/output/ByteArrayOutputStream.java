@@ -31,6 +31,8 @@ import java.util.List;
 
 import org.apache.commons.io.input.ClosedInputStream;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * This class implements an output stream in which the data is
  * written into a byte array. The buffer automatically grows as data
@@ -64,11 +66,11 @@ public class ByteArrayOutputStream extends OutputStream {
     /** The index of the current buffer. */
     private int currentBufferIndex;
     /** The total count of bytes in all the filled buffers. */
-    private int filledBufferSum;
+    private @NonNegative int filledBufferSum; //total count of bytes in all the filled buffers can't be negative
     /** The current buffer. */
     private byte[] currentBuffer;
     /** The total count of bytes written. */
-    private int count;
+    private  @NonNegative int count;
     /** Flag to indicate if the buffers can be reused after reset */
     private boolean reuseBuffers = true;
 
@@ -103,7 +105,14 @@ public class ByteArrayOutputStream extends OutputStream {
      *
      * @param newcount  the size of the buffer if one is created
      */
-    private void needNewBuffer(final int newcount) {
+     @SuppressWarnings("index")
+/* In the statements:  newBufferSize = Math.max(
+                    currentBuffer.length << 1,
+                    newcount - filledBufferSum);
+    The minimum possible value of currentBuffer.length << 1 is 0, hence the minimum possible value of the Math.max function is 0.
+    Hence, newBufferSize will not be negative.
+    */  
+    private void needNewBuffer(final @NonNegative int newcount) { // NonNegative newcount as it may give the length of currentBuffer
         if (currentBufferIndex < buffers.size() - 1) {
             //Recycling old buffer
             filledBufferSum += currentBuffer.length;
@@ -112,14 +121,14 @@ public class ByteArrayOutputStream extends OutputStream {
             currentBuffer = buffers.get(currentBufferIndex);
         } else {
             //Creating new buffer
-            int newBufferSize;
+           @NonNegative int newBufferSize;
             if (currentBuffer == null) {
                 newBufferSize = newcount;
                 filledBufferSum = 0;
             } else {
-                newBufferSize = Math.max(
+              newBufferSize = Math.max(
                     currentBuffer.length << 1,
-                    newcount - filledBufferSum);
+                    newcount - filledBufferSum); 
                 filledBufferSum += currentBuffer.length;
             }
 
@@ -136,7 +145,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * @param len The number of bytes to write
      */
     @Override
-    public void write(final byte[] b, final int off, final int len) {
+    public void write(final byte[] b, final int off, final int len) { 
         if ((off < 0)
                 || (off > b.length)
                 || (len < 0)
@@ -147,7 +156,7 @@ public class ByteArrayOutputStream extends OutputStream {
             return;
         }
         synchronized (this) {
-            final int newcount = count + len;
+            final @NonNegative int newcount = count + len;
             int remaining = len;
             int inBufferPos = count - filledBufferSum;
             while (remaining > 0) {
@@ -168,8 +177,12 @@ public class ByteArrayOutputStream extends OutputStream {
      * @param b the byte to write
      */
     @Override
-    public synchronized void write(final int b) {
-        int inBufferPos = count - filledBufferSum;
+     @SuppressWarnings("index")/* filledBufferSum is the total count of bytes in all the filled buffers which is always less than or equal to
+    count which is the total count of bytes written.
+    Typing SuppressWarnings above the method because if we initialize at the definition of inBufferPos, it also shows an error at inBufferPos=0
+    */
+     public synchronized void write(final int b) {
+     @NonNegative int inBufferPos = count - filledBufferSum; 
         if (inBufferPos == currentBuffer.length) {
             needNewBuffer(count + 1);
             inBufferPos = 0;
@@ -189,6 +202,10 @@ public class ByteArrayOutputStream extends OutputStream {
      * @throws IOException if an I/O error occurs while reading the input stream
      * @since 1.4
      */
+    @SuppressWarnings("index")
+ /* as it is the total number of counts, it can't be negative
+     In int write(), n can either be a non negative integer or -1, but when adding it to count, we check that it is not -1(EOF)
+    */
     public synchronized int write(final InputStream in) throws IOException {
         int readCount = 0;
         int inBufferPos = count - filledBufferSum;
@@ -196,7 +213,7 @@ public class ByteArrayOutputStream extends OutputStream {
         while (n != EOF) {
             readCount += n;
             inBufferPos += n;
-            count += n;
+            count+=n;
             if (inBufferPos == currentBuffer.length) {
                 needNewBuffer(currentBuffer.length);
                 inBufferPos = 0;
@@ -210,7 +227,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * Return the current size of the byte array.
      * @return the current size of the byte array
      */
-    public synchronized int size() {
+    public synchronized @NonNegative int size() {
         return count;
     }
 
@@ -358,8 +375,13 @@ public class ByteArrayOutputStream extends OutputStream {
      * @return the current contents of this output stream, as a byte array
      * @see java.io.ByteArrayOutputStream#toByteArray()
      */
+    @SuppressWarnings("index")
+/* The checker says that remaining = remaining - c may give remaining a negative value, but
+    c = Math.min(buf.length, remaining);Hence, pos is capable of attaining a minimum value of 0 only, because if buf.length is greater than
+    remaining then only can remaining go negative, but c is a minimum of buf.length and remaining 
+    */
     public synchronized byte[] toByteArray() {
-        int remaining = count;
+         @NonNegative int remaining = count; 
         if (remaining == 0) {
             return EMPTY_BYTE_ARRAY;
         }
@@ -369,7 +391,7 @@ public class ByteArrayOutputStream extends OutputStream {
             final int c = Math.min(buf.length, remaining);
             System.arraycopy(buf, 0, newbuf, pos, c);
             pos += c;
-            remaining -= c;
+           remaining -= c;
             if (remaining == 0) {
                 break;
             }

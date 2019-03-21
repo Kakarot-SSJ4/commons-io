@@ -18,6 +18,8 @@ package org.apache.commons.io.input.buffer;
 
 import java.util.Objects;
 
+import org.checkerframework.checker.index.qual.*;
+
 /**
  * A buffer, which doesn't need reallocation of byte arrays, because it
  * reuses a single byte array. This works particularly well, if reading
@@ -27,14 +29,18 @@ import java.util.Objects;
  */
 public class CircularByteBuffer {
     private final byte[] buffer;
-    private int startOffset, endOffset, currentNumberOfBytes;
+    // offsets are non negative and a valid index
+    private @NonNegative @IndexFor("this.buffer") int startOffset; 
+    private @NonNegative @IndexFor("this.buffer") int endOffset;
+    private @NonNegative int currentNumberOfBytes; // currentNumberOfBytes - can't be negative
 
     /**
      * Creates a new instance with the given buffer size.
      *
      * @param pSize the size of buffer to create
      */
-    public CircularByteBuffer(int pSize) {
+    @SuppressWarnings("index") // startOffset and endOffset = 0 is valid as pSize is NonNegative 
+    public CircularByteBuffer(@NonNegative int pSize) { // buffer size >=0
         buffer = new byte[pSize];
         startOffset = 0;
         endOffset = 0;
@@ -56,6 +62,9 @@ public class CircularByteBuffer {
      * @throws IllegalStateException The buffer is empty. Use {@link #hasBytes()},
      *                               or {@link #getCurrentNumberOfBytes()}, to prevent this exception.
      */
+    @SuppressWarnings("index") /* as soon as startOffset reaches the length, it is reset to 0
+    currentNumberOfBytes>0 => --currentNumberOfBytes >=0
+    */
     public byte read() {
         if (currentNumberOfBytes <= 0) {
             throw new IllegalStateException("No bytes available.");
@@ -82,6 +91,7 @@ public class CircularByteBuffer {
      *                                  of bytes. Use {@link #getCurrentNumberOfBytes()} to prevent this
      *                                  exception.
      */
+    @SuppressWarnings("index") // in --currentNumberOfBytes;, currentNumberOfBytes >= pLength, hence currentNumberOfBytes is never negative
     public void read(byte[] pBuffer, int pOffset, int pLength) {
         Objects.requireNonNull(pBuffer);
         if (pOffset < 0 || pOffset >= pBuffer.length) {
@@ -117,6 +127,7 @@ public class CircularByteBuffer {
      * @throws IllegalStateException The buffer is full. Use {@link #hasSpace()},
      *                               or {@link #getSpace()}, to prevent this exception.
      */
+    @SuppressWarnings("index") // as soon as endOffset reaches the length, it is reset to 0
     public void add(byte pByte) {
         if (currentNumberOfBytes >= buffer.length) {
             throw new IllegalStateException("No space available");
@@ -143,6 +154,10 @@ public class CircularByteBuffer {
      * @throws IllegalArgumentException Either of {@code pOffset}, or {@code pLength} is negative.
      * @throws NullPointerException     The byte array {@code pBuffer} is null.
      */
+    @SuppressWarnings("index") /* index is valid till pLength + pOffset -1 since the documentation suggests to 
+                compare the bytes from pOffset till pOffset + pLength -1
+    Also, offset is set to zero as soon as it reaches buffer.length.
+    */
     public boolean peek(byte[] pBuffer, int pOffset, int pLength) {
         Objects.requireNonNull(pBuffer, "Buffer");
         if (pOffset < 0 || pOffset >= pBuffer.length) {
@@ -154,13 +169,15 @@ public class CircularByteBuffer {
         if (pLength < currentNumberOfBytes) {
             return false;
         }
-        int offset = startOffset;
+        @IndexFor("this.buffer") @NonNegative int offset = startOffset; // offset is a valid index
         for (int i = 0; i < pLength; i++) {
-            if (buffer[offset] != pBuffer[i + pOffset]) {
+            if (buffer[offset] != pBuffer[i + pOffset]) { /* index is valid till pLength + pOffset -1 since the documentation suggests to 
+                compare the bytes from pOffset till pOffset + pLength -1 
+                */
                 return false;
             }
-            if (++offset == buffer.length) {
-                offset = 0;
+            if (++offset == buffer.length) { // offset is set to zero as soon as it reaches buffer.length
+                offset = 0; //
             }
         }
         return true;
@@ -179,6 +196,10 @@ public class CircularByteBuffer {
      * @throws IllegalArgumentException Either of {@code pOffset}, or {@code pLength} is negative.
      * @throws NullPointerException     The byte array {@code pBuffer} is null.
      */
+    @SuppressWarnings("index")/*index is valid till pLength + pOffset -1 since the documentation suggests to 
+                add the bytes at the indices from pOffset till pOffset + pLength -1
+    Also, offset is set to zero as soon as it reaches buffer.length.
+    */
     public void add(byte[] pBuffer, int pOffset, int pLength) {
         Objects.requireNonNull(pBuffer, "Buffer");
         if (pOffset < 0 || pOffset >= pBuffer.length) {
@@ -191,8 +212,10 @@ public class CircularByteBuffer {
             throw new IllegalStateException("No space available");
         }
         for (int i = 0; i < pLength; i++) {
-            buffer[endOffset] = pBuffer[pOffset + i];
-            if (++endOffset == buffer.length) {
+            buffer[endOffset] = pBuffer[pOffset + i];/*index is valid till pLength + pOffset -1 since the documentation suggests to 
+                add the bytes at the indices from pOffset till pOffset + pLength -1
+            */
+            if (++endOffset == buffer.length) { //Also, offset is set to zero as soon as it reaches buffer.length.
                 endOffset = 0;
             }
         }
@@ -237,7 +260,8 @@ public class CircularByteBuffer {
      *
      * @return the number of bytes that can be added
      */
-    public int getSpace() {
+    @SuppressWarnings("index") // buffer.length >= currentNumberOfBytes
+    public @NonNegative int getSpace() {
         return buffer.length - currentNumberOfBytes;
     }
 
@@ -253,6 +277,7 @@ public class CircularByteBuffer {
     /**
      * Removes all bytes from the buffer.
      */
+    @SuppressWarnings("index") // startOffset and endOffset = 0 is valid as pSize is NonNegative 
     public void clear() {
         startOffset = 0;
         endOffset = 0;

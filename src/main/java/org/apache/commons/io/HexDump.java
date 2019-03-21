@@ -67,7 +67,7 @@ public class HexDump {
      *         outside the data array's bounds
      * @throws IllegalArgumentException if the output stream is null
      */
-
+    @SuppressWarnings("index") //k's max value is data.length - j, hence k + j is not out of bounds
     public static void dump(final byte[] data, final long offset,
                             final OutputStream stream, final int index)
             throws IOException, ArrayIndexOutOfBoundsException,
@@ -93,15 +93,15 @@ public class HexDump {
             dump(buffer, display_offset).append(' ');
             for (int k = 0; k < 16; k++) {
                 if (k < chars_read) {
-                    dump(buffer, data[k + j]);
+                    dump(buffer, data[k + j]); //k's max value is data.length - j, hence k + j is not out of bounds
                 } else {
                     buffer.append("  ");
                 }
                 buffer.append(' ');
             }
             for (int k = 0; k < chars_read; k++) {
-                if (data[k + j] >= ' ' && data[k + j] < 127) {
-                    buffer.append((char) data[k + j]);
+                if (data[k + j] >= ' ' && data[k + j] < 127) { //k's max value is data.length - j, hence k + j is not out of bounds
+                    buffer.append((char) data[k + j]); //k's max value is data.length - j, hence k + j is not out of bounds
                 } else {
                     buffer.append('.');
                 }
