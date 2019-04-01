@@ -111,11 +111,7 @@ public class ByteOrderMark implements Serializable {
      * @param pos The position
      * @return The specified byte
      */
-     @SuppressWarnings("index")
-/* the specified byte at the particular position pos(non negative),
-        suppressing warning of pososibility of exceeding the bounds of bytes, ensured by equals(--) when get() is called
-        */
-    public int get(final @NonNegative int pos) { 
+    public int get(final @NonNegative @IndexFor("this.bytes") int pos) { // the specified byte at the particular position pos(non negative)
         return bytes[pos];
     }
 
@@ -140,6 +136,7 @@ public class ByteOrderMark implements Serializable {
      * false
      */
     @Override
+    @SuppressWarnings("index") // i < bytes.length() => i is a valid index of bytes[] hence a valid parameter of get(int pos)
     public boolean equals(final Object obj) {
         if (!(obj instanceof ByteOrderMark)) {
             return false;
